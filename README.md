@@ -1,4 +1,4 @@
-# NLP Layer Probing
+## NLP Layer Probing
 
 This project studies how linguistic information is distributed across transformer layers using a layer-wise probing framework. We freeze a pretrained transformer encoder, extract hidden-state embeddings from each layer, and train lightweight classifiers on top of those embeddings to test whether specific linguistic properties are linearly recoverable.
 
