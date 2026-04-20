@@ -138,6 +138,19 @@ Plot length results:
 ```bash
 python -m src.plot_results --metrics_path results/metrics/length_layerwise_metrics.csv --task_name length
 ```
+Tense:
+Extract embeddings:
+```bash
+python -m src.extract_embeddings --task tense --max_samples 2000 --batch_size 16 --max_length 128 --use_cls_token
+```
+Train probes:
+```bash
+python -m src.train_probe --embeddings_path results/embeddings/tense_layer_embeddings.pkl --task_name tense
+```
+Plot results:
+```bash
+python -m src.plot_results --metrics_path results/metrics/tense_layerwise_metrics.csv --task_name tense
+```
 
 ## Expected findings
 
