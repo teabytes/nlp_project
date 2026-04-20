@@ -1,6 +1,7 @@
 import random
 from typing import List, Tuple
 
+import re
 import numpy as np
 import pandas as pd
 from datasets import load_dataset
@@ -52,6 +53,45 @@ def build_length_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy()
     df["label"] = get_sentence_length_labels(df["sentence"].tolist())
+    return df
+
+#second half of the implementation code for tense detection task
+PAST_IRREGULARS = {
+    "went", "made", "saw", "took", "got", "had", "was", "were", "did",
+    "said", "felt", "left", "knew", "thought", "came", "gave", "found",
+    "told", "became", "kept", "held", "wrote", "bought", "ran"
+}
+
+def detect_tense(sentence: str) -> int:
+    """
+    Returns:
+        0 = present
+        1 = past
+    """
+    s = str(sentence).lower()
+    tokens = re.findall(r"\b[a-z']+\b", s)
+
+    # common past indicators
+    if any(t in {"was", "were", "had", "did"} for t in tokens):
+        return 1
+
+    if any(t in PAST_IRREGULARS for t in tokens):
+        return 1
+
+    # simple regular past tense heuristic
+    if re.search(r"\b[a-z]+ed\b", s):
+        return 1
+
+    return 0
+
+
+def build_tense_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Copies the dataframe and replaces/creates df['label'] with tense labels:
+    0 = present, 1 = past
+    """
+    df = df.copy()
+    df["label"] = df["sentence"].apply(detect_tense)
     return df
 
 

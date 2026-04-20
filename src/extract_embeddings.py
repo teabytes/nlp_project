@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
+#from transformers.convert_slow_tokenizers_checkpoints_to_fast import args
 
 from src.config import (
     MODEL_NAME,
@@ -17,7 +18,7 @@ from src.config import (
     EMBEDDINGS_DIR,
     ensure_dirs,
 )
-from src.data_utils import load_sst2, build_length_dataset
+from src.data_utils import load_sst2, build_length_dataset, build_tense_dataset
 
 
 def set_seed(seed: int = RANDOM_SEED):
@@ -141,7 +142,7 @@ def extract_layer_embeddings(
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", type=str, default="sst2", choices=["sst2", "length"])
+    parser.add_argument("--task", type=str, default="sst2", choices=["sst2", "length", "tense"]) # add tense task - implementation 2
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--max_length", type=int, default=128)
     parser.add_argument("--max_samples", type=int, default=2000)
@@ -161,16 +162,20 @@ def main():
     model = AutoModel.from_pretrained(MODEL_NAME).to(device)
 
     
-    # Load dataset based on task
+    # Load dataset based on task - reuse SST-2 text for all tasks, but modify labels for length and tense tasks -- implementation 2
     if args.task == "sst2":
         df = load_sst2(split="train")
-
+   
     elif args.task == "length":
         df = load_sst2(split="train")  # reuse SST-2 text
         df = build_length_dataset(df)
 
+    elif args.task == "tense":
+        df = load_sst2(split="train")  # reuse SST-2 text
+        df = build_tense_dataset(df)
+
     else:
-        raise ValueError(f"Unsupported task: {args.task}")  
+        raise ValueError(f"Unsupported task: {args.task}") 
 
     if args.max_samples is not None and args.max_samples > 0:
         df = df.sample(n=min(args.max_samples, len(df)), random_state=RANDOM_SEED).reset_index(drop=True)
